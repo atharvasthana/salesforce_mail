@@ -1,0 +1,15 @@
+{
+  "name": "salesforce-email-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.13",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^6.10.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
