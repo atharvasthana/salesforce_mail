@@ -39,36 +39,36 @@ app.get("/", (req, res) => {
 
 // Main email endpoint (NO TIMEOUT METHOD)
 app.post("/sendEmail", async (req, res) => {
-
     const { to, subject, body } = req.body;
 
     if (!to || !subject || !body) {
-        return res.status(400).json({ status: "error", message: "Missing fields" });
+        return res.status(400).json({
+            status: "error",
+            message: "Missing fields"
+        });
     }
 
-    // 1️⃣ Respond to Salesforce IMMEDIATELY (avoids Read Timeout)
-    res.json({ status: "queued" });
+    try {
+        const info = await transporter.sendMail({
+            from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
+            to,
+            subject,
+            text: body
+        });
 
-    // 2️⃣ Send email asynchronously AFTER response  
-    setTimeout(async () => {
-        try {
-            const info = await transporter.sendMail({
-                from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
-                to,
-                subject,
-                text: body
-            });
+        console.log("Email sent:", info.messageId);
 
-            console.log("Email sent:", info.messageId);
+        return res.status(200).json({
+            status: "sent",
+            messageId: info.messageId
+        });
 
-        } catch (err) {
-            console.error("Async Email Send Error:", err.message);
-        }
-    }, 10); // slight delay so Salesforce gets immediate response
-});
+    } catch (err) {
+        console.error("Email send failed:", err);
 
-// Run server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Email API running on port ${PORT}`);
+        return res.status(500).json({
+            status: "failed",
+            error: err.message
+        });
+    }
 });
